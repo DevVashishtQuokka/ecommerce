@@ -1,13 +1,10 @@
-# admin_panel/views.py
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser
 from django.core.mail import send_mail
 from django.conf import settings
 from utils.responder import Responder
-
 from user.models import CustomUser
 from .serializers import SellerListSerializer, SellerApprovalSerializer
-from utils.responder import Responder
 
 def get_object_or_none(model, **kwargs):
     return model.objects.filter(**kwargs).first()
@@ -16,8 +13,8 @@ class SellerListByApprovalStatusView(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        approved_sellers = CustomUser.objects.filter(is_approved=True).select_related('user')
-        pending_sellers = CustomUser.objects.filter(is_approved=False).select_related('user')
+        approved_sellers = CustomUser.objects.filter(is_approved=True, user_type='seller')
+        pending_sellers = CustomUser.objects.filter(is_approved=False, user_type='seller')
 
         approved_data = SellerListSerializer(approved_sellers, many=True).data
         pending_data = SellerListSerializer(pending_sellers, many=True).data
@@ -38,7 +35,7 @@ class ApproveSellerView(APIView):
             return Responder.error_response(406, errors={"error": "Seller profile not found."})
 
         if seller.is_approved:
-            return Responder.error_response(407,errors={"error": "Seller already approved."})
+            return Responder.error_response(407, errors={"error": "Seller already approved."})
 
         serializer = SellerApprovalSerializer(seller, data={'is_approved': True}, partial=True)
         if serializer.is_valid():
@@ -53,5 +50,4 @@ class ApproveSellerView(APIView):
 
             return Responder.success_response(112, data=serializer.data)
 
-        return Responder.error_response(400, message="Validation failed.")
-
+        return Responder.error_response(400, errors={"error": "Validation failed."})

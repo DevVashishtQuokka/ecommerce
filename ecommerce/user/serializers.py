@@ -27,13 +27,9 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop('password2')
         password = validated_data.pop('password')
-        user = User(**validated_data)
+        user = CustomUser(**validated_data)
         user.set_password(password)
         user.save()
-
-        if user.user_type == 'seller':
-            SellerProfile.objects.create(user=user)
-
         return user
 
 class UserProfileSerializer(serializers.ModelSerializer):
