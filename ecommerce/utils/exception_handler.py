@@ -16,13 +16,13 @@ def exception_handler(exc, context):
             errors = response.data
 
         return Responder.error_response(
-            code=4000, 
+            code=400, 
             errors=errors,
             status_code=response.status_code
         )
 
     return Responder.error_response(
-        code=5000,  
+        code=500,  
         errors={"error": str(exc)},
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
     )
